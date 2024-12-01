@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Input, Button } from '@material-tailwind/react';
 import Logo from '../assets/logo-svg.svg';
-import { useLoginMutation } from '../api/userApi';
+import { useLoginMutation } from '../api/Userapi';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
 import { useDispatch } from 'react-redux';
@@ -135,7 +135,7 @@ export const Login = () => {
           </div>
 
           <a
-            href="#"
+            href="/reset-password"
             className="text-sm text-blue-500 hover:text-blue-700 mt-2 inline-block"
           >
             Forgot Password?

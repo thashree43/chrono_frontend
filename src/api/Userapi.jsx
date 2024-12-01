@@ -120,6 +120,33 @@ export const UserApislice = createApi({
       }),
       invalidatesTags: ['Sales'],
     }),
+    emailreport: builder.mutation({
+      query: (reportData) => ({
+        url: '/sales/email-report',
+        method: 'POST',
+        body: reportData,
+      }),
+    }),
+    userlogout: builder.mutation({
+      query: () => ({
+        url: '/logout',
+        method: 'POST',
+      }),
+    }),
+    Forgetpassword:builder.mutation({
+      query:(email)=>({
+        url:'/reset-password',
+        method:"POST",
+        body:{email}
+      })
+    }),
+    Updatepassword:builder.mutation({
+      query:(Postdata)=>({
+        url:"/updatepassword",
+        method:"PATCH",
+        body:Postdata
+      })
+    })
   }),
 });
 
@@ -129,7 +156,9 @@ export const {
   useVerifyOtpMutation,
   useResendOtpMutation,
   useLoginMutation,
-
+  useUserlogoutMutation,
+  useForgetpasswordMutation,
+  useUpdatepasswordMutation,
   // Product-related Queries and Mutations
   useGetProductsQuery,
   useAddproductMutation,
@@ -145,4 +174,5 @@ export const {
   // Sales-related Queries and Mutations
   useGetsalesentriesQuery,
   useAddsalesentryMutation,
+  useEmailreportMutation,
 } = UserApislice;

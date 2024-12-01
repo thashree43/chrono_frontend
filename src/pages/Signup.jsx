@@ -3,7 +3,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import Logo from '../assets/logo-svg.svg';
-import { useRegiterpostMutation } from '../api/userApi';
+import { useRegiterpostMutation } from '../api/Userapi';
 import PasswordStrengthField from '../reusablecomponent/Passwordfield';
 import Otp from './Otp';
 

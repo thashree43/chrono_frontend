@@ -10,29 +10,40 @@ import {
   DialogHeader,
   DialogBody,
   DialogFooter,
+  Menu,
+  MenuHandler,
+  MenuList,
+  MenuItem,
 } from '@material-tailwind/react';
-import { PlusIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/solid';
+import {
+  PlusIcon,
+  TrashIcon,
+  EyeIcon,
+  PrinterIcon,
+  DocumentArrowDownIcon,
+  EnvelopeIcon,
+} from '@heroicons/react/24/solid';
 import {
   useGetCustomersQuery,
   useGetProductsQuery,
   useGetsalesentriesQuery,
+  useAddsalesentryMutation,
+  useEmailreportMutation,
 } from '../api/Userapi';
 import { toast } from 'react-toastify';
-import { useAddsalesentryMutation } from '../api/Userapi';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 export const Saleslist = () => {
   // Queries
   const { data: customers = [] } = useGetCustomersQuery();
   const { data: products = [] } = useGetProductsQuery();
-  const {
-    data: salesEntries = [],
-    isLoading: isSalesLoading,
-    error: salesError,
-  } = useGetsalesentriesQuery();
+  const { data: salesEntries = [] } = useGetsalesentriesQuery();
 
   // Mutations
   const [addSalesEntry] = useAddsalesentryMutation();
-
+  const [emailreport] = useEmailreportMutation();
   // State Management
   const [isAddSaleModalOpen, setIsAddSaleModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -40,30 +51,196 @@ export const Saleslist = () => {
   const [quantity, setQuantity] = useState(1);
   const [currentSalesEntries, setCurrentSalesEntries] = useState([]);
   const [selectedSaleDetails, setSelectedSaleDetails] = useState(null);
-
-  // Pagination for Sales Entries
+  const [selectedDateRange, setSelectedDateRange] = useState({
+    startDate: null,
+    endDate: null,
+  });
+  const [isEmailReportModalOpen, setIsEmailReportModalOpen] = useState(false);
+  const [reportEmail, setReportEmail] = useState('');
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const entriesPerPage = 5;
 
-  // Calculated Values
-  const totalCost = useMemo(() => {
-    return currentSalesEntries.reduce(
-      (total, entry) => total + entry.price * entry.quantity,
-      0
-    );
-  }, [currentSalesEntries]);
+  // Filtered Sales Entries
+  const filteredSalesEntries = useMemo(() => {
+    return salesEntries.filter((entry) => {
+      const entryDate = new Date(entry.Date);
+      return (
+        (!selectedDateRange.startDate ||
+          entryDate >= selectedDateRange.startDate) &&
+        (!selectedDateRange.endDate || entryDate <= selectedDateRange.endDate)
+      );
+    });
+  }, [salesEntries, selectedDateRange]);
 
-  // Pagination Logic
+  // Pagination Calculations
   const indexOfLastEntry = currentPage * entriesPerPage;
   const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
-  const currentEntries = salesEntries.slice(
+  const currentEntries = filteredSalesEntries.slice(
     indexOfFirstEntry,
     indexOfLastEntry
   );
+  const totalPages = Math.ceil(filteredSalesEntries.length / entriesPerPage);
 
-  const totalPages = Math.ceil(salesEntries.length / entriesPerPage);
+  const handleEmailReport = async () => {
+    if (!reportEmail) {
+      toast.error('Please enter an email address');
+      return;
+    }
 
-  // Input Handlers
+    try {
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(reportEmail)) {
+        toast.error('Please enter a valid email address');
+        return;
+      }
+
+      // Send sales report via email
+      const response = await emailreport({
+        reportData: filteredSalesEntries,
+        email: reportEmail,
+      }).unwrap();
+      console.log(response);
+
+      toast.success('Sales report sent to email successfully');
+      setIsEmailReportModalOpen(false);
+      setReportEmail('');
+    } catch (error) {
+      console.error('Email report error:', error);
+      toast.error(
+        error.response?.data?.message || 'Failed to send sales report'
+      );
+    }
+  };
+
+  const renderEmailReportModal = () => {
+    return (
+      <Dialog
+        open={isEmailReportModalOpen}
+        handler={() => setIsEmailReportModalOpen(false)}
+      >
+        <DialogHeader>Email Sales Report</DialogHeader>
+        <DialogBody divider>
+          <div className="mb-4">
+            <Input
+              label="Email Address"
+              value={reportEmail}
+              onChange={(e) => setReportEmail(e.target.value)}
+              type="email"
+            />
+          </div>
+          <Typography variant="small" color="gray">
+            The sales report will be sent to this email address.
+          </Typography>
+        </DialogBody>
+        <DialogFooter>
+          <Button
+            variant="text"
+            color="red"
+            onClick={() => setIsEmailReportModalOpen(false)}
+            className="mr-2"
+          >
+            Cancel
+          </Button>
+          <Button color="green" onClick={handleEmailReport}>
+            Send Report
+          </Button>
+        </DialogFooter>
+      </Dialog>
+    );
+  };
+
+  // Reporting Functions
+  const generateReport = (type) => {
+    switch (type) {
+      case 'print':
+        handlePrintReport(filteredSalesEntries);
+        break;
+      case 'excel':
+        handleExportToExcel(filteredSalesEntries);
+        break;
+      case 'pdf':
+        handleExportToPDF(filteredSalesEntries);
+        break;
+      case 'email':
+        setIsEmailReportModalOpen(true);
+        break;
+    }
+  };
+
+  const handlePrintReport = (data) => {
+    const printWindow = window.open('', '', 'width=900,height=700');
+    printWindow.document.write('<html><head><title>Sales Report</title>');
+    printWindow.document.write(`
+      <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+      </style>
+    `);
+    printWindow.document.write('</head><body>');
+    printWindow.document.write('<h1>Sales Report</h1>');
+    printWindow.document.write('<table>');
+    printWindow.document.write(`
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Total</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data
+          .map(
+            (sale) => `
+          <tr>
+            <td>${sale.customerName}</td>
+            <td>${sale.productName}</td>
+            <td>${sale.quantity}</td>
+            <td>₹${sale.total.toFixed(2)}</td>
+            <td>${new Date(sale.Date).toLocaleDateString()}</td>
+          </tr>
+        `
+          )
+          .join('')}
+      </tbody>
+    `);
+    printWindow.document.write('</table>');
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+  const handleExportToExcel = (data) => {
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sales Report');
+    XLSX.writeFile(workbook, 'sales_report.xlsx');
+  };
+
+  const handleExportToPDF = (data) => {
+    const doc = new jsPDF();
+    doc.text('Sales Report', 10, 10);
+
+    doc.autoTable({
+      head: [['Customer', 'Product', 'Quantity', 'Total', 'Date']],
+      body: data.map((sale) => [
+        sale.customerName,
+        sale.productName,
+        sale.quantity.toString(),
+        `₹${sale.total.toFixed(2)}`,
+        new Date(sale.Date).toLocaleDateString(),
+      ]),
+      startY: 20,
+    });
+
+    doc.save('sales_report.pdf');
+  };
+
+  // Existing methods from previous implementation...
   const handleCustomerSelect = (customerId) => {
     const customer = customers.find((c) => c._id === customerId);
     setSelectedCustomer(customer);
@@ -140,7 +317,6 @@ export const Saleslist = () => {
       toast.error(error.data?.message || 'Failed to record sale');
     }
   };
-
   const viewSaleDetails = (sale) => {
     setSelectedSaleDetails(sale);
   };
@@ -224,6 +400,11 @@ export const Saleslist = () => {
       </div>
     );
   };
+
+  const totalCost = currentSalesEntries.reduce(
+    (total, entry) => total + entry.total,
+    0
+  );
 
   const renderAddSaleModal = () => {
     return (
@@ -402,34 +583,88 @@ export const Saleslist = () => {
     );
   };
 
+  const renderReportsDropdown = () => {
+    return (
+      <Menu placement="bottom-end">
+        <MenuHandler>
+          <Button variant="outlined" className="flex items-center gap-2">
+            <DocumentArrowDownIcon className="h-4 w-4" /> Reports
+          </Button>
+        </MenuHandler>
+        <MenuList>
+          <MenuItem
+            className="flex items-center gap-2"
+            onClick={() => generateReport('print')}
+          >
+            <PrinterIcon className="h-4 w-4" /> Print
+          </MenuItem>
+          <MenuItem
+            className="flex items-center gap-2"
+            onClick={() => generateReport('excel')}
+          >
+            <DocumentArrowDownIcon className="h-4 w-4" /> Export to Excel
+          </MenuItem>
+          <MenuItem
+            className="flex items-center gap-2"
+            onClick={() => generateReport('pdf')}
+          >
+            <DocumentArrowDownIcon className="h-4 w-4" /> Export to PDF
+          </MenuItem>
+          <MenuItem
+            className="flex items-center gap-2"
+            onClick={() => generateReport('email')}
+          >
+            <EnvelopeIcon className="h-4 w-4" /> Email
+          </MenuItem>
+        </MenuList>
+      </Menu>
+    );
+  };
+
   return (
     <Card className="h-full w-full p-4">
       <div className="flex justify-between items-center mb-4">
         <Typography variant="h5">Sales Management</Typography>
-        <Button
-          onClick={() => setIsAddSaleModalOpen(true)}
-          className="flex items-center gap-2"
-        >
-          <PlusIcon className="h-5 w-5" /> Add Sale
-        </Button>
+        <div className="flex space-x-2">
+          {renderReportsDropdown()}
+          <Button
+            onClick={() => setIsAddSaleModalOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <PlusIcon className="h-5 w-5" /> Add Sale
+          </Button>
+        </div>
       </div>
 
-      {/* Loading and Error States */}
-      {isSalesLoading ? (
-        <Typography className="text-center">Loading sales...</Typography>
-      ) : salesError ? (
-        <Typography color="red" className="text-center">
-          Error loading sales: {salesError.message}
-        </Typography>
-      ) : salesEntries.length === 0 ? (
-        <Typography className="text-center">No sales entries found</Typography>
-      ) : (
-        renderSalesTable()
-      )}
+      {/* Date Range Filter */}
+      <div className="flex space-x-2 mb-4">
+        <Input
+          type="date"
+          label="Start Date"
+          onChange={(e) =>
+            setSelectedDateRange((prev) => ({
+              ...prev,
+              startDate: new Date(e.target.value),
+            }))
+          }
+        />
+        <Input
+          type="date"
+          label="End Date"
+          onChange={(e) =>
+            setSelectedDateRange((prev) => ({
+              ...prev,
+              endDate: new Date(e.target.value),
+            }))
+          }
+        />
+      </div>
 
-      {/* Modals */}
+      {/* Existing render methods */}
+      {renderSalesTable()}
       {renderAddSaleModal()}
       {renderSaleDetailsModal()}
+      {renderEmailReportModal()}
     </Card>
   );
 };

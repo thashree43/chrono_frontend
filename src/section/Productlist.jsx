@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+/* eslint-disable react/prop-types */
+import { useState, useEffect, useMemo } from 'react';
+import { debounce } from 'lodash';
 import {
   Card,
   Typography,
@@ -17,6 +19,7 @@ import {
   PhotoIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  MagnifyingGlassIcon,
 } from '@heroicons/react/24/solid';
 import {
   useAddproductMutation,
@@ -34,6 +37,7 @@ export const Productlist = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
   const itemsPerPage = 10;
 
   // Fetch products query
@@ -47,6 +51,15 @@ export const Productlist = () => {
   const [deleteProduct] = useDeleteProductMutation();
   const [updateProduct] = useUpdateProductMutation();
 
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    description: '',
+    price: '',
+    stock: '',
+    status: 'In Stock',
+    image: null,
+  });
+
   // Update local state when products are fetched
   useEffect(() => {
     if (productsData && Array.isArray(productsData)) {
@@ -57,26 +70,41 @@ export const Productlist = () => {
     }
   }, [productsData]);
 
-  const [newProduct, setNewProduct] = useState({
-    name: '',
-    description: '',
-    price: '',
-    stock: '',
-    status: 'In Stock',
-    image: null,
-  });
+  // Debounced search handler
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((term) => {
+        setSearchTerm(term);
+        setCurrentPage(1); // Reset to first page on new search
+      }, 300),
+    []
+  );
+
+  // Filtered and paginated products
+  const filteredProducts = useMemo(() => {
+    if (!searchTerm) return products;
+
+    return products.filter((product) =>
+      Object.values(product).some((value) =>
+        String(value).toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+  }, [products, searchTerm]);
+
+  const currentProducts = useMemo(() => {
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    return filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+  }, [filteredProducts, currentPage, itemsPerPage]);
 
   // Description Cell Component
-  // eslint-disable-next-line react/prop-types
   const DescriptionCell = ({ description }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    // eslint-disable-next-line react/prop-types
     const isLongDescription = description.split(' ').length > 3;
 
     const truncatedDescription =
       isLongDescription && !isExpanded
-        ? // eslint-disable-next-line react/prop-types
-          description.split(' ').slice(0, 3).join(' ') + '...'
+        ? description.split(' ').slice(0, 3).join(' ') + '...'
         : description;
 
     return (
@@ -116,13 +144,6 @@ export const Productlist = () => {
     'Image',
     'Actions',
   ];
-
-  // Pagination logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentProducts = products.slice(indexOfFirstItem, indexOfLastItem);
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const validateInputs = () => {
     const errors = [];
@@ -236,17 +257,17 @@ export const Productlist = () => {
   };
 
   const handleEditProduct = (product) => {
-    console.log('Edit Product Clicked', product); // Debugging log
     setEditingProduct(product);
     setIsEditModalOpen(true);
   };
+
   const handleDeleteProduct = async (productId) => {
     try {
       await deleteProduct(productId).unwrap();
-      toast.success('product deleted succefully');
+      toast.success('Product deleted successfully');
     } catch (error) {
       console.error('Failed to delete product', error);
-      toast.error('error in deleting the product');
+      toast.error('Error in deleting the product');
     }
   };
 
@@ -281,6 +302,16 @@ export const Productlist = () => {
             </Typography>
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+            {/* Search Input */}
+            <div className="relative flex items-center mr-4">
+              <Input
+                type="text"
+                placeholder="Search products..."
+                className="pr-10"
+                onChange={(e) => debouncedSearch(e.target.value)}
+                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+              />
+            </div>
             <Button
               onClick={() => setIsAddModalOpen(true)}
               className="flex items-center gap-3"
@@ -290,6 +321,7 @@ export const Productlist = () => {
             </Button>
           </div>
         </div>
+
         <CardBody className="overflow-x-auto px-0">
           <table className="mt-4 w-full min-w-max table-auto text-left">
             <thead>
@@ -410,13 +442,14 @@ export const Productlist = () => {
         </CardBody>
         <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
           <Typography variant="small" color="blue-gray" className="font-normal">
-            Page {currentPage} of {Math.ceil(products.length / itemsPerPage)}
+            Page {currentPage} of{' '}
+            {Math.ceil(filteredProducts.length / itemsPerPage)}
           </Typography>
           <div className="flex gap-2">
             <Button
               variant="outlined"
               size="sm"
-              onClick={() => paginate(currentPage - 1)}
+              onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage === 1}
             >
               Previous
@@ -424,9 +457,10 @@ export const Productlist = () => {
             <Button
               variant="outlined"
               size="sm"
-              onClick={() => paginate(currentPage + 1)}
+              onClick={() => setCurrentPage(currentPage + 1)}
               disabled={
-                currentPage === Math.ceil(products.length / itemsPerPage)
+                currentPage ===
+                Math.ceil(filteredProducts.length / itemsPerPage)
               }
             >
               Next

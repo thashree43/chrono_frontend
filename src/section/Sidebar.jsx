@@ -20,6 +20,10 @@ import Logo from '../assets/logo-svg.svg';
 import { Productlist } from './Productlist';
 import { Customerlist } from './Customerlist';
 import { Saleslist } from './Saleslist';
+import { toast } from 'react-toastify';
+import { useUserlogoutMutation } from '../api/Userapi';
+import { useDispatch } from 'react-redux';
+import { clearUserInfo, clearUserToken } from '../api/authslice';
 
 export const Sidebar = () => {
   const [open, setOpen] = useState(0);
@@ -27,7 +31,8 @@ export const Sidebar = () => {
   const [showProductList, setShowProductList] = useState(false);
   const [showCustomerList, setShowCustomerList] = useState(false);
   const [ShowSalesList, setShowSalesList] = useState(false);
-
+  const [userlogout] = useUserlogoutMutation();
+  const dispatch = useDispatch();
   console.log(selectedItem);
 
   const handleOpen = (value) => {
@@ -55,6 +60,20 @@ export const Sidebar = () => {
     setShowProductList(false);
     setShowCustomerList(false);
   };
+
+  const handlelogout = async () => {
+    try {
+      await userlogout().unwrap();
+      localStorage.removeItem('userInfo');
+      dispatch(clearUserInfo());
+      dispatch(clearUserToken());
+      toast.success('logout successfully');
+    } catch (error) {
+      console.error(error);
+      toast.error('Logout error occurred');
+    }
+  };
+
   return (
     <div className="flex">
       <Card className="h-[calc(100vh-2rem)] w-full max-w-[20rem] p-4 shadow-xl shadow-blue-gray-900/5">
@@ -152,7 +171,7 @@ export const Sidebar = () => {
             </ListItemPrefix>
             Sales
           </ListItem>
-          <ListItem>
+          <ListItem onClick={handlelogout}>
             <ListItemPrefix>
               <PowerIcon className="h-5 w-5" />
             </ListItemPrefix>

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { useVerifyOtpMutation, useResendOtpMutation } from '../api/userApi';
+import { useVerifyOtpMutation, useResendOtpMutation } from '../api/Userapi';
 import Modal from '../reusablecomponent/Modal';
+
 
 // eslint-disable-next-line react/prop-types
 const Otp = ({ email }) => {
@@ -124,10 +125,15 @@ const Otp = ({ email }) => {
       });
 
       // Show success modal
-      setModalState({
-        isOpen: true,
-        title: 'OTP Resent',
-        message: response.message || 'A new OTP has been sent to your email.',
+      toast.success(response.message || 'A new OTP has been sent to your email.', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
       });
 
       // Reset error states
