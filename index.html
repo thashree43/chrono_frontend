@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="CHRONO - Your ultimate watch e-commerce destination. Explore premium watches for every occasion."
+    />
+    <meta
+      name="keywords"
+      content="watches, e-commerce, luxury watches, men's watches, women's watches, chrono"
+    />
+    <meta name="author" content="CHRONO Team" />
+    <title>CHRONO - Watches for Every Occasion</title>
+
+    <!-- Default Favicon -->
+    <link id="favicon" rel="icon" />
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="module" src="/src/main.jsx"></script>
+
+    <script>
+      // Dynamically render an analog watch icon as a favicon
+      const canvas = document.createElement('canvas');
+      const size = 32; // Size of the favicon (32x32 pixels)
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // Draw the analog watch face (circle)
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size / 2 - 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#fff'; // White background for the watch face
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#000'; // Black outline for the watch face
+      ctx.stroke();
+
+      // Draw the watch marks (numbers)
+      ctx.font = '6px Arial';
+      ctx.fillStyle = '#000'; // Black color for numbers
+      for (let i = 1; i <= 12; i++) {
+        let angle = (Math.PI / 6) * (i - 3); // Positions of numbers on the clock
+        let x = size / 2 + Math.cos(angle) * (size / 2 - 5);
+        let y = size / 2 + Math.sin(angle) * (size / 2 - 5);
+        ctx.fillText(i, x - 2, y + 2); // Adjust text position to center numbers
+      }
+
+      // Draw the clock hands (static time)
+      ctx.strokeStyle = '#000'; // Black color for hands
+      ctx.lineWidth = 2;
+
+      // Draw hour hand (static position)
+      ctx.save();
+      ctx.translate(size / 2, size / 2);
+      ctx.rotate((Math.PI / 6) * 3); // Hour hand at 3 o'clock (adjust as needed)
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, -size / 4);
+      ctx.stroke();
+      ctx.restore();
+
+      // Draw minute hand (static position)
+      ctx.save();
+      ctx.translate(size / 2, size / 2);
+      ctx.rotate((Math.PI / 30) * 15); // Minute hand at 15 minutes (adjust as needed)
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, -size / 2.5);
+      ctx.stroke();
+      ctx.restore();
+
+      // Draw the second hand (static position, thinner)
+      ctx.save();
+      ctx.translate(size / 2, size / 2);
+      ctx.rotate((Math.PI / 30) * 25); // Second hand at 25 seconds (adjust as needed)
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, -size / 2.5);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#ff0000'; // Red color for second hand
+      ctx.stroke();
+      ctx.restore();
+
+      // Set the canvas as the favicon
+      const favicon = document.getElementById('favicon');
+      favicon.href = canvas.toDataURL('image/png');
+    </script>
+  </body>
+</html>
