@@ -133,20 +133,28 @@ export const UserApislice = createApi({
         method: 'POST',
       }),
     }),
-    Forgetpassword:builder.mutation({
-      query:(email)=>({
-        url:'/reset-password',
-        method:"POST",
-        body:{email}
-      })
+    Forgetpassword: builder.mutation({
+      query: (email) => ({
+        url: '/reset-password',
+        method: 'POST',
+        body: { email },
+      }),
     }),
-    Updatepassword:builder.mutation({
-      query:(Postdata)=>({
-        url:"/updatepassword",
-        method:"PATCH",
-        body:Postdata
-      })
-    })
+    Updatepassword: builder.mutation({
+      query: (Postdata) => ({
+        url: '/updatepassword',
+        method: 'PATCH',
+        body: Postdata,
+      }),
+    }),
+    getDashboard: builder.query({
+      query: () => '/dashboard',
+      transformResponse: (response) => {
+        console.log('Dashboard Summary Response:', response);
+        return response;
+      },
+      providesTags: ['Sales']
+    }),
   }),
 });
 
@@ -175,4 +183,5 @@ export const {
   useGetsalesentriesQuery,
   useAddsalesentryMutation,
   useEmailreportMutation,
+  useGetDashboardQuery
 } = UserApislice;

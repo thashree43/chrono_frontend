@@ -20,10 +20,11 @@ import Logo from '../assets/logo-svg.svg';
 import { Productlist } from './Productlist';
 import { Customerlist } from './Customerlist';
 import { Saleslist } from './Saleslist';
+import Dashboard from "./Dashboard"
 import { toast } from 'react-toastify';
 import { useUserlogoutMutation } from '../api/Userapi';
 import { useDispatch } from 'react-redux';
-import { clearUserInfo, clearUserToken } from '../api/authslice';
+import { clearUserInfo, clearUserToken, logout } from '../api/authslice';
 
 export const Sidebar = () => {
   const [open, setOpen] = useState(0);
@@ -31,6 +32,7 @@ export const Sidebar = () => {
   const [showProductList, setShowProductList] = useState(false);
   const [showCustomerList, setShowCustomerList] = useState(false);
   const [ShowSalesList, setShowSalesList] = useState(false);
+  const [ShowDashboard, setShowDashboard]= useState(false)
   const [userlogout] = useUserlogoutMutation();
   const dispatch = useDispatch();
   console.log(selectedItem);
@@ -44,6 +46,8 @@ export const Sidebar = () => {
     setShowProductList(true);
     setShowCustomerList(false);
     setShowSalesList(false);
+    setShowDashboard(false);
+
     // Hide customer list when products are selected
   };
 
@@ -52,6 +56,8 @@ export const Sidebar = () => {
     setShowCustomerList(true);
     setShowProductList(false);
     setShowSalesList(false);
+    setShowDashboard(false);
+
     // Hide product list when customers are selected
   };
   const handleSlaesList = () => {
@@ -59,6 +65,16 @@ export const Sidebar = () => {
     setShowSalesList(true);
     setShowProductList(false);
     setShowCustomerList(false);
+    setShowDashboard(false);
+
+  };
+  const handleDashboard = () => {
+    setSelectedItem('Dashboard');
+    setShowDashboard(true);
+    setShowProductList(false);
+    setShowCustomerList(false);
+    setShowSalesList(false);
+
   };
 
   const handlelogout = async () => {
@@ -67,6 +83,7 @@ export const Sidebar = () => {
       localStorage.removeItem('userInfo');
       dispatch(clearUserInfo());
       dispatch(clearUserToken());
+      dispatch(logout())
       toast.success('logout successfully');
     } catch (error) {
       console.error(error);
@@ -104,7 +121,7 @@ export const Sidebar = () => {
         <List>
           <Accordion>
             <AccordionHeader
-              onClick={() => handleOpen(1)}
+              onClick={() => handleDashboard()}
               className="border-b-0 p-3"
             >
               <ListItemPrefix>
@@ -195,6 +212,11 @@ export const Sidebar = () => {
         <div className="flex-grow ml-4">
           <Saleslist />
         </div>
+      )}
+      {ShowDashboard && (
+        <div className="flex-grow ml-4">
+        <Dashboard />
+      </div>
       )}
     </div>
   );

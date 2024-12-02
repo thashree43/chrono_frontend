@@ -5,7 +5,7 @@ import { useLoginMutation } from '../api/Userapi';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
 import { useDispatch } from 'react-redux';
-import { setUserInfor, setUserToken } from '../api/authslice';
+import { setUserInfo, setUserToken } from '../api/authslice';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
@@ -29,7 +29,7 @@ export const Login = () => {
     if (response) {
       toast.success('user Logined successfully');
       localStorage.setItem('userInfo', JSON.stringify(response));
-      dispatch(setUserInfor(response.user));
+      dispatch(setUserInfo(response.user));
       dispatch(setUserToken(response.token));
       navigate('/');
       setEmail('');

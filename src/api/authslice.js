@@ -1,14 +1,25 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+const getUserInfoFromStorage = () => {
+  try {
+    const storedUserInfo = localStorage.getItem('userInfo');
+    return storedUserInfo ? JSON.parse(storedUserInfo) : null;
+  } catch {
+    return null;
+  }
+};
+
+const getTokenFromStorage = () => {
+  try {
+    return localStorage.getItem('token') || null;
+  } catch {
+    return null;
+  }
+};
+
 const initialState = {
-  userInfo: (() => {
-    try {
-      return JSON.parse(localStorage.getItem('userInfo')) || null;
-    } catch {
-      return null;
-    }
-  })(),
-  token: null,
+  userInfo: getUserInfoFromStorage(),
+  token: getTokenFromStorage(),
 };
 
 const authSlice = createSlice({
@@ -17,24 +28,59 @@ const authSlice = createSlice({
   reducers: {
     setUserToken: (state, action) => {
       state.token = action.payload;
+      try {
+        localStorage.setItem('token', action.payload);
+      } catch (error) {
+        console.error('Error storing token', error);
+      }
     },
-    setUserInfor: (state, action) => {
+
+    setUserInfo: (state, action) => {
       state.userInfo = action.payload;
-      localStorage.setItem('userInfo', JSON.stringify(action.payload));
-      console.log('the data may her ');
-      localStorage.setItem('userInfo', JSON.stringify(action.payload));
-      console.log('the data has added to  the localstorage ');
+      try {
+        localStorage.setItem('userInfo', JSON.stringify(action.payload));
+      } catch (error) {
+        console.error('Error storing user info', error);
+      }
     },
-    clearUserInfo(state) {
+
+    clearUserInfo: (state) => {
       state.userInfo = null;
-      localStorage.removeItem('userInfo');
+      try {
+        localStorage.removeItem('userInfo');
+      } catch (error) {
+        console.error('Error removing user info', error);
+      }
     },
-    clearUserToken(state) {
+
+    clearUserToken: (state) => {
       state.token = null;
+      try {
+        localStorage.removeItem('token');
+      } catch (error) {
+        console.error('Error removing token', error);
+      }
     },
+
+    logout: (state) => {
+      state.userInfo = null;
+      state.token = null;
+      try {
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem('token');
+      } catch (error) {
+        console.error('Error during logout', error);
+      }
+    }
   },
 });
 
-export const { setUserToken, setUserInfor, clearUserInfo, clearUserToken } =
-  authSlice.actions;
+export const { 
+  setUserToken, 
+  setUserInfo, 
+  clearUserInfo, 
+  clearUserToken,
+  logout 
+} = authSlice.actions;
+
 export default authSlice.reducer;

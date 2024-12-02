@@ -4,7 +4,6 @@ import { toast } from 'react-toastify';
 import { useVerifyOtpMutation, useResendOtpMutation } from '../api/Userapi';
 import Modal from '../reusablecomponent/Modal';
 
-
 // eslint-disable-next-line react/prop-types
 const Otp = ({ email }) => {
   const [otp, setOtp] = useState({
@@ -125,16 +124,19 @@ const Otp = ({ email }) => {
       });
 
       // Show success modal
-      toast.success(response.message || 'A new OTP has been sent to your email.', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
+      toast.success(
+        response.message || 'A new OTP has been sent to your email.',
+        {
+          position: 'top-right',
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'light',
+        }
+      );
 
       // Reset error states
       setOtpErrors({});

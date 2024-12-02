@@ -4,6 +4,7 @@ import RegistartionForm from '../pages/Signup';
 import { Sidebar } from '../section/Sidebar';
 import ResetPasswordForm from '../pages/Forgetpassword';
 import UpdatePasswordForm from '../pages/Updatepassword';
+import {ProtectedRoute} from "../routes/protectroute/Protectedroute"
 
 export const Userroute = () => {
   return (
@@ -11,8 +12,10 @@ export const Userroute = () => {
       <Route path="/" element={<Login />} />
       <Route path="/signup" element={<RegistartionForm />} />
       <Route path="/reset-password" element={<ResetPasswordForm />} />
+      <Route element={<ProtectedRoute />}>
       <Route path="/home" element={<Sidebar />} />
-      <Route path="/updatepassword/:token" element={<UpdatePasswordForm/>}/> 
+      </Route>
+      <Route path="/updatepassword/:token" element={<UpdatePasswordForm />} />
     </Routes>
   );
 };

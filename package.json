@@ -32,6 +32,7 @@
     "react-router": "^7.0.1",
     "react-router-dom": "^7.0.1",
     "react-toastify": "^10.0.6",
+    "recharts": "^2.13.3",
     "reducers": "^3.0.0-alpha",
     "tw-elements-react": "^1.0.0-alpha-end",
     "xlsx": "^0.18.5",

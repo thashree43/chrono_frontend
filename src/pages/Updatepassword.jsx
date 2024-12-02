@@ -1,8 +1,8 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useNavigate, useParams } from 'react-router-dom';
-import {useUpdatepasswordMutation } from "../api/Userapi"; // Adjusted naming convention
+import { useUpdatepasswordMutation } from '../api/Userapi'; // Adjusted naming convention
 
 export const ResetPasswordInputForm = () => {
   const [newPassword, setNewPassword] = useState('');
@@ -12,7 +12,7 @@ export const ResetPasswordInputForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [updatePassword] = useUpdatepasswordMutation(); // Renamed for clarity
-  
+
   const { token } = useParams(); // Correctly extract token from URL
   const navigate = useNavigate();
 
@@ -22,12 +22,12 @@ export const ResetPasswordInputForm = () => {
       uppercase: !/[A-Z]/.test(password),
       lowercase: !/[a-z]/.test(password),
       number: !/\d/.test(password),
-      specialChar: !/[@$!%*?&]/.test(password)
+      specialChar: !/[@$!%*?&]/.test(password),
     };
 
     return {
-      isValid: !Object.values(errors).some(error => error),
-      errors
+      isValid: !Object.values(errors).some((error) => error),
+      errors,
     };
   };
 
@@ -54,11 +54,13 @@ export const ResetPasswordInputForm = () => {
     try {
       // Call update password mutation with token and new password
       await updatePassword({ newPassword, token }).unwrap();
-      
+
       toast.success('Password reset successfully');
       navigate('/'); // Redirect to login page
     } catch (err) {
-      setError(err.data?.message || 'Failed to reset password. Please try again.');
+      setError(
+        err.data?.message || 'Failed to reset password. Please try again.'
+      );
       console.error(err);
     } finally {
       setLoading(false);
@@ -68,22 +70,22 @@ export const ResetPasswordInputForm = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-md">
-        <form 
+        <form
           onSubmit={handleSubmit}
           className="bg-white shadow-md rounded-lg px-8 pt-6 pb-8 mb-4"
         >
           <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
             Reset Password
           </h2>
-          
+
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
               {error}
             </div>
           )}
-          
+
           <div className="mb-4 relative">
-            <label 
+            <label
               htmlFor="newPassword"
               className="block text-gray-700 text-sm font-bold mb-2"
             >
@@ -91,7 +93,7 @@ export const ResetPasswordInputForm = () => {
             </label>
             <div className="relative">
               <input
-                type={showNewPassword ? "text" : "password"}
+                type={showNewPassword ? 'text' : 'password'}
                 id="newPassword"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -112,9 +114,9 @@ export const ResetPasswordInputForm = () => {
               </button>
             </div>
           </div>
-          
+
           <div className="mb-6 relative">
-            <label 
+            <label
               htmlFor="confirmPassword"
               className="block text-gray-700 text-sm font-bold mb-2"
             >
@@ -122,7 +124,7 @@ export const ResetPasswordInputForm = () => {
             </label>
             <div className="relative">
               <input
-                type={showConfirmPassword ? "text" : "password"}
+                type={showConfirmPassword ? 'text' : 'password'}
                 id="confirmPassword"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -143,25 +145,26 @@ export const ResetPasswordInputForm = () => {
               </button>
             </div>
           </div>
-          
+
           <div className="flex items-center justify-center">
             <button
               type="submit"
               disabled={loading}
               className={`w-full text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline 
-                ${loading 
-                  ? 'bg-gray-500 cursor-not-allowed' 
-                  : 'bg-blue-500 hover:bg-blue-700 transition duration-300'
+                ${
+                  loading
+                    ? 'bg-gray-500 cursor-not-allowed'
+                    : 'bg-blue-500 hover:bg-blue-700 transition duration-300'
                 }`}
             >
               {loading ? 'Processing...' : 'Reset Password'}
             </button>
           </div>
-          
+
           <div className="text-center mt-4">
             <p className="text-sm text-gray-600">
-              Remember your password? {' '}
-              <button 
+              Remember your password?{' '}
+              <button
                 type="button"
                 onClick={() => navigate('/login')}
                 className="text-blue-500 hover:text-blue-700 font-bold"
