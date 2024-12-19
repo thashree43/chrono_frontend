@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const baseurluser = "https://chrono-t7bh.onrender.com";
+const baseurluser = import.meta.env.VITE_BASE_URL;
 
 const baseQuery = fetchBaseQuery({
   baseUrl: baseurluser,
