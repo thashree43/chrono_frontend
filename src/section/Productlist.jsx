@@ -261,6 +261,7 @@ export const Productlist = () => {
       });
 
       setImagePreview(null);
+      toast.success("product added successfully")
       setIsAddModalOpen(false);
     } catch (error) {
       console.error('Failed to add product', error);
