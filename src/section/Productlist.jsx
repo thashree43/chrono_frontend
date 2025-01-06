@@ -535,7 +535,7 @@ export const Productlist = () => {
                   required
                 />
               </div>
-              <div>
+              {/* <div>
                 <Typography variant="small" color="blue-gray" className="mb-2">
                   Status
                 </Typography>
@@ -549,7 +549,7 @@ export const Productlist = () => {
                   <option value="Low Stock">Low Stock</option>
                   <option value="Limited">Limited</option>
                 </select>
-              </div>
+              </div> */}
 
               {/* Image Upload Section */}
               <div className="flex items-center space-x-4">
