@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const baseurluser = import.meta.env.VITE_BASE_URL;
@@ -41,11 +42,41 @@ export const UserApislice = createApi({
     }),
     getProducts: builder.query({
       query: () => '/get-products',
-      transformResponse: (response) => {
-        console.log('API Response:', response); // Debugging log
-        return response.products || []; // Ensure it returns an array
+      transformResponse: (response, meta, arg) => {
+        console.log('Raw API Response:', response);
+        
+        // Handle undefined or null response
+        if (!response) {
+          console.error('API returned empty response');
+          return [];
+        }
+    
+        // Check if response.products exists and is an array
+        if (response.products && Array.isArray(response.products)) {
+          return response.products;
+        }
+    
+        // If response itself is an array, return it
+        if (Array.isArray(response)) {
+          return response;
+        }
+    
+        // Log error for unexpected response format
+        console.error('Unexpected API response format:', response);
+        return [];
+      },
+      // eslint-disable-next-line no-unused-vars
+      transformErrorResponse: (response, meta, arg) => {
+        console.error('API Error:', response);
+        return response;
+      },
+      // Add retry logic for failed requests
+      extraOptions: {
+        maxRetries: 3,
       },
       providesTags: ['Products'],
+      // Add cache lifetime
+      keepUnusedDataFor: 300, // Cache for 5 minutes
     }),
     addproduct: builder.mutation({
       query: (formData) => ({

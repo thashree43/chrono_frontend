@@ -62,11 +62,14 @@ export const Productlist = () => {
 
   // Update local state when products are fetched
   useEffect(() => {
-    if (productsData && Array.isArray(productsData)) {
-      setProducts(productsData);
-    } else {
-      console.error('Products data is not an array:', productsData);
-      setProducts([]);
+    if (productsData) {
+      // Check if productsData has the expected structure
+      if (Array.isArray(productsData?.products || productsData)) {
+        setProducts(productsData?.products || productsData);
+      } else {
+        console.error('Products data is not in expected format:', productsData);
+        setProducts([]);
+      }
     }
   }, [productsData]);
 
