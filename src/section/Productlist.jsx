@@ -62,8 +62,8 @@ export const Productlist = () => {
 
   // Update local state when products are fetched
   useEffect(() => {
-    if (productsData && Array.isArray(productsData.products)) {
-      setProducts(productsData.products );
+    if (productsData && Array.isArray(productsData)) {
+      setProducts(productsData);
     } else {
       console.error('Products data is not an array:', productsData);
       setProducts([]);
