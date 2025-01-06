@@ -62,8 +62,8 @@ export const Productlist = () => {
 
   // Update local state when products are fetched
   useEffect(() => {
-    if (productsData && Array.isArray(productsData)) {
-      setProducts(productsData);
+    if (productsData && Array.isArray(productsData.products)) {
+      setProducts(productsData.products );
     } else {
       console.error('Products data is not an array:', productsData);
       setProducts([]);
@@ -96,6 +96,18 @@ export const Productlist = () => {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     return filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
   }, [filteredProducts, currentPage, itemsPerPage]);
+
+  if (isLoading) {
+    return <Typography>Loading products...</Typography>;
+  }
+
+  if (isError) {
+    return (
+      <Typography color="red">
+        Error loading products: {error?.message || 'Unexpected error'}
+      </Typography>
+    );
+  }
 
   // Description Cell Component
   const DescriptionCell = ({ description }) => {

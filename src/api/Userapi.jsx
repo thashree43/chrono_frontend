@@ -158,6 +158,7 @@ export const UserApislice = createApi({
   }),
 });
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const {
   // Authentication Mutations
   useRegiterpostMutation,
