@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable react/prop-types */
 import { useState, useEffect, useMemo } from 'react';
 import { debounce } from 'lodash';
@@ -43,17 +42,11 @@ export const Productlist = () => {
 
   // Fetch products query
   const {
-    data: productsData = [],
+    data: productsData,
     isLoading,
     isError,
-    error
-  } = useGetProductsQuery(undefined, {
-    // Add polling if needed
-    pollingInterval: 0,
-    // Customize refetch behavior
-    refetchOnMountOrArgChange: true
-  });
-  
+    error,
+  } = useGetProductsQuery();
   const [addproduct] = useAddproductMutation();
   const [deleteProduct] = useDeleteProductMutation();
   const [updateProduct] = useUpdateProductMutation();
@@ -72,21 +65,10 @@ export const Productlist = () => {
     if (productsData && Array.isArray(productsData)) {
       setProducts(productsData);
     } else {
-      console.warn('Products data is not in expected format:', productsData);
+      console.error('Products data is not an array:', productsData);
       setProducts([]);
     }
   }, [productsData]);
-  
-  // Update your error handling JSX
-  if (isError) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <Typography color="red">
-          {error?.data?.message || 'Failed to load products. Please try again later.'}
-        </Typography>
-      </div>
-    );
-  }
 
   // Debounced search handler
   const debouncedSearch = useMemo(

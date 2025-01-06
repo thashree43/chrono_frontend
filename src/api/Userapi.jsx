@@ -42,27 +42,8 @@ export const UserApislice = createApi({
     getProducts: builder.query({
       query: () => '/get-products',
       transformResponse: (response) => {
-        // If the response contains products array, return it
-        if (response?.products && Array.isArray(response.products)) {
-          return response.products;
-        }
-        // If no products found, return empty array
-        return [];
-      },
-      transformErrorResponse: (response) => {
-        // Handle error responses
-        if (response.status === 404) {
-          return []; // Return empty array for no products found
-        }
-        throw new Error(response.data?.message || 'Failed to fetch products');
-      },
-      // Add error handling
-      async onQueryStarted(arg, { queryFulfilled }) {
-        try {
-          await queryFulfilled;
-        } catch (error) {
-          console.error('Product fetch error:', error);
-        }
+        console.log('API Response:', response); // Debugging log
+        return response.products || []; // Ensure it returns an array
       },
       providesTags: ['Products'],
     }),
