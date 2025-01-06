@@ -43,7 +43,7 @@ export const Productlist = () => {
 
   // Fetch products query
   const {
-    data: productdata = [],
+    data: productsData = [],
     isLoading,
     isError,
     error
@@ -69,13 +69,13 @@ export const Productlist = () => {
 
   // Update local state when products are fetched
   useEffect(() => {
-    if (productdata && Array.isArray(productdata)) {
-      setProducts(products);
+    if (productsData && Array.isArray(productsData)) {
+      setProducts(productsData);
     } else {
-      console.warn('Products data is not in expected format:', products);
+      console.warn('Products data is not in expected format:', productsData);
       setProducts([]);
     }
-  }, [productdata, products]);
+  }, [productsData]);
   
   // Update your error handling JSX
   if (isError) {
