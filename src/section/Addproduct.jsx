@@ -126,7 +126,7 @@ export const AddProductModal = ({
               required
             />
           </div>
-          {/* <div>
+          <div>
             <Typography variant="small" color="blue-gray" className="mb-2">
               Status
             </Typography>
@@ -140,7 +140,7 @@ export const AddProductModal = ({
               <option value="Low Stock">Low Stock</option>
               <option value="Limited">Limited</option>
             </select>
-          </div> */}
+          </div>
           <div className="flex justify-end space-x-4">
             <Button variant="text" color="blue-gray" onClick={onClose}>
               Cancel
