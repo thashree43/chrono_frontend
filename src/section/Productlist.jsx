@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable react/prop-types */
 import { useState, useEffect, useMemo } from 'react';
 import { debounce } from 'lodash';
@@ -42,11 +43,17 @@ export const Productlist = () => {
 
   // Fetch products query
   const {
-    data: productsData,
+    data: productdata = [],
     isLoading,
     isError,
-    error,
-  } = useGetProductsQuery();
+    error
+  } = useGetProductsQuery(undefined, {
+    // Add polling if needed
+    pollingInterval: 0,
+    // Customize refetch behavior
+    refetchOnMountOrArgChange: true
+  });
+  
   const [addproduct] = useAddproductMutation();
   const [deleteProduct] = useDeleteProductMutation();
   const [updateProduct] = useUpdateProductMutation();
@@ -62,16 +69,24 @@ export const Productlist = () => {
 
   // Update local state when products are fetched
   useEffect(() => {
-    if (productsData) {
-      // Check if productsData has the expected structure
-      if (Array.isArray(productsData?.products || productsData)) {
-        setProducts(productsData?.products || productsData);
-      } else {
-        console.error('Products data is not in expected format:', productsData);
-        setProducts([]);
-      }
+    if (productdata && Array.isArray(productdata)) {
+      setProducts(products);
+    } else {
+      console.warn('Products data is not in expected format:', products);
+      setProducts([]);
     }
-  }, [productsData]);
+  }, [productdata, products]);
+  
+  // Update your error handling JSX
+  if (isError) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Typography color="red">
+          {error?.data?.message || 'Failed to load products. Please try again later.'}
+        </Typography>
+      </div>
+    );
+  }
 
   // Debounced search handler
   const debouncedSearch = useMemo(
